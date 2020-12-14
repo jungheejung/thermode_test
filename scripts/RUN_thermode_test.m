@@ -18,6 +18,6 @@ biopac = 0;
 main_dir  = pwd;
 
 task1 = 'thermode_test';
-task1_cb = 'task-pain_counterbalance_ver-01_block-01';
+task1_cb = 'task-pain_counterbalance';
 run_task1 = strcat(task1,'(',num2str(sub_num),",'",char(task1_cb), "',",num2str(session), ',',num2str(biopac),',',num2str(debug),')');
 eval(run_task1);

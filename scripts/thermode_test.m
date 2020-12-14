@@ -1,4 +1,4 @@
-function thermode_test(sub,input_counterbalance_file, run_num,session, debug)
+function thermode_test(sub,input_counterbalance_file, session, biopac,debug)
 
 % code by Heejung Jung
 % heejung.jung@colorado.edu
@@ -50,7 +50,7 @@ ip_address = '192.168.0.114'; %ROOM 406 Medoc
 %ip_address = '10.64.1.10'; % DBIC MRI MEDOC
 
 global p
-Screen('Preference', 'SkipSyncTests', 0);
+Screen('Preference', 'SkipSyncTests', 1);
 PsychDefaultSetup(2);
 if debug
     ListenChar(0);
@@ -96,7 +96,7 @@ if ~exist(sub_save_dir, 'dir');    mkdir(sub_save_dir);     end
 %cue_low_dir                    = fullfile(main_dir,'stimuli','cue','scl');
 %cue_high_dir                   = fullfile([main_dir,'stimuli','cue','sch']);
 counterbalancefile             = fullfile(main_dir, 'design',[input_counterbalance_file, '.csv']);
-countBalMat                    = readtable(counterbalancefile);
+countBalMat                    = readtable(counterbalancefile,'Format', '%f%f%s%f%f%f%f%f');
 
 %% C. Circular rating scale _____________________________________________________
 image_filepath                 = fullfile(main_dir, 'stimuli', 'ratingscale');
@@ -120,7 +120,8 @@ vtypes = {'double','double','double',...
 'double',...
 'double','double','double','double',...
 'double','double'};
-T = table('Size', [size(countBalMat,1) size(vnames,2)], 'VariableNames', vnames, 'VariableTypes', vtypes);T.event02_cue_type             = cell(size(countBalMat,1),1);
+T = table('Size', [size(countBalMat,1) size(vnames,2)], 'VariableNames', vnames, 'VariableTypes', vtypes);
+
 %a                              = split(counterbalancefile,filesep); % full path filename components
 %version_chunk                  = split(extractAfter(a(end),"ver-"),"_");
 %block_chunk                    = split(extractAfter(a(end),"block-"),["-", "."]);
@@ -178,14 +179,14 @@ HideCursor;
 %% H. Make Images Into Textures ________________________________________________
 DrawFormattedText(p.ptb.window,sprintf('LOADING\n\n0%% complete'),'center','center',p.ptb.white );
 Screen('Flip',p.ptb.window);
-for trl = 1:length(countBalMat.cue_type)
+for trl = 1:length(countBalMat.eightbit)
 
 
     actual_tex      = Screen('MakeTexture', p.ptb.window, imread(image_scale)); % pure rating scale
     start_tex       = Screen('MakeTexture',p.ptb.window, imread(instruct_start));
     end_tex         = Screen('MakeTexture',p.ptb.window, imread(instruct_end));
 
-    DrawFormattedText(p.ptb.window,sprintf('LOADING\n\n%d%% complete', ceil(100*trl/length(countBalMat.cue_type))),'center','center',p.ptb.white);
+    DrawFormattedText(p.ptb.window,sprintf('LOADING\n\n%d%% complete', ceil(100*trl/length(countBalMat.eightbit))),'center','center',p.ptb.white);
     Screen('Flip',p.ptb.window);
 
 end
@@ -224,12 +225,14 @@ for trl = 1:size(countBalMat,1)
     port = 20121;
 
     %% _________________________ 1. Fixtion Jitter 0-4 sec _________________________
-    %jitter1 = countBalMat.ISI1(trl);
+    jitter1 = T.jitter1(trl);
     Screen('DrawLines', p.ptb.window, p.fix.allCoords,...
         p.fix.lineWidthPix, p.ptb.white, [p.ptb.xCenter p.ptb.yCenter], 2);
     T.event01_fixation_onset(trl)         = Screen('Flip', p.ptb.window);
     % T.event01_fixation_biopac(trl)        = biopac_linux_matlab(biopac, channel, channel.fixation1, 1);
     %WaitSecs(jitter1);
+    temp = T.administer(trl);
+    main(ip, port, 1, temp);
     WaitSecs('UntilTime', T.event01_fixation_onset(trl) + T.jitter1(trl));
     % jitter1_end                           = biopac_linux_matlab(biopac, channel, channel.fixation1, 0);
     %T.event01_fixation_duration(trl)      = jitter1_end - T.event01_fixation_onset(trl);
@@ -239,8 +242,7 @@ for trl = 1:size(countBalMat,1)
     % Screen('DrawTexture', p.ptb.window, cue_tex{trl}, [], [], 0);
     % T.event02_cue_onset(trl)            = Screen('Flip',p.ptb.window);
     % T.event02_cue_biopac(trl)             = biopac_linux_matlab(biopac, channel, channel.cue, 1);
-    temp = shuffled.eightbit(trl);
-    main(ip, port, 1, temp);
+
     % WaitSecs('UntilTime', T.event01_fixation_onset(trl) + countBalMat.ISI1(trl) + 1.00);
     % biopac_linux_matlab(biopac, channel, channel.cue, 0);
     % T.event02_cue_type{trl}             = countBalMat.cue_type{trl};
@@ -266,8 +268,9 @@ for trl = 1:size(countBalMat,1)
     T.event04_fixation_onset(trl)         = Screen('Flip', p.ptb.window);
     %T.event04_fixation_biopac(trl)        = biopac_linux_matlab(biopac, channel, channel.fixation2, 1);
     %WaitSecs(jitter2);
-    WaitSecs('UntilTime', T.event01_fixation_onset(trl) + jitter1 + jitter2 + 5.00);
-   % end_jitter2                           = biopac_linux_matlab(biopac, channel, channel.fixation2, 0);
+    WaitSecs('UntilTime', T.event01_fixation_onset(trl) + T.jitter1(trl) + T.jitter2(trl)+ 5.00);
+    
+   end_jitter2                           = GetSecs;% biopac_linux_matlab(biopac, channel, channel.fixation2, 0);
     %T.event04_fixation_duration(trl)      = end_jitter2 - T.event04_fixation_onset(trl) ;
 
     %% ____________________________ 5. pain ___________________________________
@@ -288,14 +291,14 @@ for trl = 1:size(countBalMat,1)
     % T.event05_administer_type(trl) = countBalMat.administer(trl);
 
     %% ________________________ 6. post evaluation rating ______________________
-    [trajectory, display_onset, RT, response_onset, biopac_display_onset] = circular_rating_output(4, p, actual_tex,'actual', biopac, channel, channel.actual);
-    biopac_linux_matlab(biopac, channel, channel.actual, 0);
+    [trajectory, display_onset, RT, response_onset] = circular_rating_output(4, p, actual_tex,'actual');
+%    biopac_linux_matlab(biopac, channel, channel.actual, 0);
 
     rating_trajectory{trl,2}              = trajectory;
     T.event06_actual_displayonset(trl)    = display_onset;
     T.event06_actual_RT(trl)              = RT;
     T.event06_actual_responseonset(trl)   = response_onset;
-    T.event06_actual_biopac(trl)          = biopac_display_onset;
+   % T.event06_actual_biopac(trl)          = biopac_display_onset;
 
 
     %% ________________________ 7. temporarily save file _______________________
