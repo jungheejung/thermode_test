@@ -230,9 +230,9 @@ for trl = 1:size(countBalMat,1)
     T.event01_fixation_onset(trl)         = Screen('Flip', p.ptb.window);
     % T.event01_fixation_biopac(trl)        = biopac_linux_matlab(biopac, channel, channel.fixation1, 1);
     %WaitSecs(jitter1);
-    WaitSecs('UntilTime', T.event01_fixation_onset(trl) + T.jitter1(trl));
+    WaitSecs('UntilTime', T.event01_fixation_onset(trl) + countBalMat.ISI1(trl));
     % jitter1_end                           = biopac_linux_matlab(biopac, channel, channel.fixation1, 0);
-    %T.event01_fixation_duration(trl)      = jitter1_end - T.event01_fixation_onset(trl);
+    T.event01_fixation_duration(trl)      = jitter1_end - T.event01_fixation_onset(trl);
 
     %% ________________________________ 2. cue 1s __________________________________
     % biopac_linux_matlab(biopac, channel, channel.cue, 0);
@@ -260,15 +260,15 @@ for trl = 1:size(countBalMat,1)
 
     %% _________________________ 4. Fixtion Jitter 0-2 sec _________________________
 
-    jitter2 = T.jitter2(trl);
+    jitter2 = countBalMat.ISI2(trl);
     Screen('DrawLines', p.ptb.window, p.fix.allCoords,...
         p.fix.lineWidthPix, p.ptb.white, [p.ptb.xCenter p.ptb.yCenter], 2);
     T.event04_fixation_onset(trl)         = Screen('Flip', p.ptb.window);
     %T.event04_fixation_biopac(trl)        = biopac_linux_matlab(biopac, channel, channel.fixation2, 1);
     %WaitSecs(jitter2);
     WaitSecs('UntilTime', T.event01_fixation_onset(trl) + jitter1 + jitter2 + 5.00);
-   % end_jitter2                           = biopac_linux_matlab(biopac, channel, channel.fixation2, 0);
-    %T.event04_fixation_duration(trl)      = end_jitter2 - T.event04_fixation_onset(trl) ;
+    end_jitter2                           = biopac_linux_matlab(biopac, channel, channel.fixation2, 0);
+    T.event04_fixation_duration(trl)      = end_jitter2 - T.event04_fixation_onset(trl) ;
 
     %% ____________________________ 5. pain ___________________________________
     main(ip, port, 4, temp); %start trigger
@@ -282,7 +282,7 @@ for trl = 1:size(countBalMat,1)
 
     T.event05_administer_displayonset(trl) = Screen('Flip', p.ptb.window);
     %T.event05_administer_biopac(trl)      = biopac_linux_matlab(biopac, channel, channel.administer, 1);
-    WaitSecs('UntilTime', T.event05_administer_displayonset(trl) + T.duration(trl));
+    WaitSecs('UntilTime', T.event05_administer_displayonset(trl) + shuffled.duration(trl));
     % WaitSecs(task_duration);
     %biopac_linux_matlab(biopac, channel, channel.administer, 0);
     % T.event05_administer_type(trl) = countBalMat.administer(trl);
