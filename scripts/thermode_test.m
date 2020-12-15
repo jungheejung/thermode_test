@@ -232,7 +232,7 @@ for trl = 1:size(countBalMat,1)
     % T.event01_fixation_biopac(trl)        = biopac_linux_matlab(biopac, channel, channel.fixation1, 1);
     %WaitSecs(jitter1);
     temp = T.administer(trl);
-    main(ip, port, 1, temp);
+
     WaitSecs('UntilTime', T.event01_fixation_onset(trl) + T.jitter1(trl));
     % jitter1_end                           = biopac_linux_matlab(biopac, channel, channel.fixation1, 0);
     %T.event01_fixation_duration(trl)      = jitter1_end - T.event01_fixation_onset(trl);
@@ -247,7 +247,12 @@ for trl = 1:size(countBalMat,1)
     % biopac_linux_matlab(biopac, channel, channel.cue, 0);
     % T.event02_cue_type{trl}             = countBalMat.cue_type{trl};
     % T.event02_cue_filename{trl}         = countBalMat.cue_image{trl};
-
+    main(ip, port, 1, temp);
+        Screen('DrawLines', p.ptb.window, p.fix.allCoords,...
+        p.fix.lineWidthPix, p.ptb.white, [p.ptb.xCenter p.ptb.yCenter], 2);
+    T.event02_fixation_onset(trl)         = Screen('Flip', p.ptb.window);
+    WaitSecs('UntilTime', T.event02_fixation_onset(trl) +5.00);
+        
 
     %% __________________________ 3. expectation rating ____________________________
 
@@ -285,7 +290,7 @@ for trl = 1:size(countBalMat,1)
 
     T.event05_administer_displayonset(trl) = Screen('Flip', p.ptb.window);
     %T.event05_administer_biopac(trl)      = biopac_linux_matlab(biopac, channel, channel.administer, 1);
-    WaitSecs('UntilTime', T.event05_administer_displayonset(trl) + T.duration(trl));
+    WaitSecs('UntilTime',end_jitter2 + T.duration(trl));
     % WaitSecs(task_duration);
     %biopac_linux_matlab(biopac, channel, channel.administer, 0);
     % T.event05_administer_type(trl) = countBalMat.administer(trl);
