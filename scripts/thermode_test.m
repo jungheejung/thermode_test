@@ -143,6 +143,7 @@ T.plateau = shuffled.plateau;
 T.sequence = shuffled.sequence;
 T.jitter1 = shuffled.jitter1;
 T.jitter2 = shuffled.jitter2;
+T.fixed_ITI = shuffled.fixed_ITI;
 
 
 %% E. Keyboard information _____________________________________________________
@@ -251,7 +252,7 @@ for trl = 1:size(countBalMat,1)
         Screen('DrawLines', p.ptb.window, p.fix.allCoords,...
         p.fix.lineWidthPix, p.ptb.white, [p.ptb.xCenter p.ptb.yCenter], 2);
     T.event02_fixation_onset(trl)         = Screen('Flip', p.ptb.window);
-    WaitSecs('UntilTime', T.event02_fixation_onset(trl) +5.00);
+    WaitSecs('UntilTime', T.event02_fixation_onset(trl) + T.fixed_ITI(trl));
         
 
     %% __________________________ 3. expectation rating ____________________________
@@ -273,7 +274,7 @@ for trl = 1:size(countBalMat,1)
     T.event04_fixation_onset(trl)         = Screen('Flip', p.ptb.window);
     %T.event04_fixation_biopac(trl)        = biopac_linux_matlab(biopac, channel, channel.fixation2, 1);
     %WaitSecs(jitter2);
-    WaitSecs('UntilTime', T.event01_fixation_onset(trl) + T.jitter1(trl) + T.jitter2(trl)+ 5.00);
+    WaitSecs('UntilTime', T.event01_fixation_onset(trl) + T.jitter1(trl) + T.jitter2(trl)+ T.fixed_ITI(trl));
     
    end_jitter2                           = GetSecs;% biopac_linux_matlab(biopac, channel, channel.fixation2, 0);
     %T.event04_fixation_duration(trl)      = end_jitter2 - T.event04_fixation_onset(trl) ;
@@ -290,7 +291,7 @@ for trl = 1:size(countBalMat,1)
 
     T.event05_administer_displayonset(trl) = Screen('Flip', p.ptb.window);
     %T.event05_administer_biopac(trl)      = biopac_linux_matlab(biopac, channel, channel.administer, 1);
-    WaitSecs('UntilTime',end_jitter2 + T.duration(trl));
+    WaitSecs('UntilTime',end_jitter2 + T.duration(trl) + 1.00);
     % WaitSecs(task_duration);
     %biopac_linux_matlab(biopac, channel, channel.administer, 0);
     % T.event05_administer_type(trl) = countBalMat.administer(trl);
