@@ -1,4 +1,4 @@
-function thermode_test(sub,input_counterbalance_file, session, biopac,debug)
+function thermode_test(sub, session, run, biopac,debug)
 
 % code by Heejung Jung
 % heejung.jung@colorado.edu
@@ -84,19 +84,19 @@ taskname                       = 'pain';
 % example: sub-0001_ses-01_task-social_run-cognitive-01
 bids_string                     = [strcat('sub-', sprintf('%04d', sub)), ...
 strcat('_thermodesize-',sprintf('%02d', session), 'mm'),...
-strcat('_task-testing')];
+strcat('_task-testing'),...
+strcat('_plateau-',sprintf('%02d', run), 's')];
 sub_save_dir = fullfile(main_dir, 'data', strcat('sub-', sprintf('%04d', sub)),...
 strcat('thermodesize-',sprintf('%02d', session), 'mm'),...
     'beh'  );
 %repo_save_dir = fullfile(repo_dir, 'data', strcat('sub-', sprintf('%04d', sub)),...
 %    strcat('thermodesize-',sprintf('%02d', session), 'mm'));
 if ~exist(sub_save_dir, 'dir');    mkdir(sub_save_dir);     end
-%if ~exist(repo_save_dir, 'dir');    mkdir(repo_save_dir);   end
 
-%cue_low_dir                    = fullfile(main_dir,'stimuli','cue','scl');
-%cue_high_dir                   = fullfile([main_dir,'stimuli','cue','sch']);
-counterbalancefile             = fullfile(main_dir, 'design',[input_counterbalance_file, '.csv']);
-countBalMat                    = readtable(counterbalancefile,'Format', '%f%f%s%f%f%f%f%f');
+
+
+counterbalancefile             = fullfile(main_dir, 'design',['task-pain_counterbalance_',num2str(run) 's.csv']);
+countBalMat                    = readtable(counterbalancefile,'Format', '%f%f%s%f%f%f%f%f%f');
 
 %% C. Circular rating scale _____________________________________________________
 image_filepath                 = fullfile(main_dir, 'stimuli', 'ratingscale');
@@ -110,7 +110,7 @@ vnames = {'src_subject_id', 'session_id','param_trigger_onset',...
     'event01_fixation_onset',...
     'event04_fixation_onset','event04_fixation_duration',...
     'event05_administer_displayonset',...
-    'event06_actual_onset','event06_actual_biopac','event06_actual_responseonset','event06_actual_RT',...
+    'event06_actual_onset','event06_actual_responseonset','event06_actual_RT',...
     'param_end_instruct_onset','param_experiment_duration'};
 vtypes = {'double','double','double',...
 'double','double','double','double','double',...
@@ -118,7 +118,7 @@ vtypes = {'double','double','double',...
 'double',...
 'double','double',...
 'double',...
-'double','double','double','double',...
+'double','double','double',...
 'double','double'};
 T = table('Size', [size(countBalMat,1) size(vnames,2)], 'VariableNames', vnames, 'VariableTypes', vtypes);
 
@@ -135,6 +135,7 @@ T.session_id(:)                = session;
 %T.param_cond_type              = countBalMat.cond_type;
 %T.event02_cue_type             = countBalMat.cue_type;
 %T.event05_administer_type      = countBalMat.administer;
+
 shuffled = countBalMat(randperm(size(countBalMat,1)), :);
 T.administer = shuffled.eightbit;
 T.duration = shuffled.duration;
@@ -253,7 +254,7 @@ for trl = 1:size(countBalMat,1)
         p.fix.lineWidthPix, p.ptb.white, [p.ptb.xCenter p.ptb.yCenter], 2);
     T.event02_fixation_onset(trl)         = Screen('Flip', p.ptb.window);
     WaitSecs('UntilTime', T.event02_fixation_onset(trl) + T.fixed_ITI(trl));
-        
+
 
     %% __________________________ 3. expectation rating ____________________________
 
@@ -275,7 +276,7 @@ for trl = 1:size(countBalMat,1)
     %T.event04_fixation_biopac(trl)        = biopac_linux_matlab(biopac, channel, channel.fixation2, 1);
     %WaitSecs(jitter2);
     WaitSecs('UntilTime', T.event01_fixation_onset(trl) + T.jitter1(trl) + T.jitter2(trl)+ T.fixed_ITI(trl));
-    
+
    end_jitter2                           = GetSecs;% biopac_linux_matlab(biopac, channel, channel.fixation2, 0);
     %T.event04_fixation_duration(trl)      = end_jitter2 - T.event04_fixation_onset(trl) ;
 
