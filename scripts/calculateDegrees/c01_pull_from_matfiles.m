@@ -8,27 +8,28 @@
 % __status__ = "Production"
 
 % iteratively go through dataset and pull out last row
-% filename example: sub-096_task-cognitive_beh_trajectory.mat
-% variable name is "rating_Trajectory" 
-
-sub = [1,2,3,4,5,6,7,8,9,10,11,12,15,16,19,25,26,27,28];%,96,97,99];
-taskname = {'cognitive', 'vicarious'};
+% filename example: sub-0001_thermodesize-16mm_task-testing_trajectory.mat
+% variable name is "rating_trajectory"
+% /Users/h/Documents/projects_local/thermode_test/data/sub-0001/thermodesize-16mm/beh/sub-0001_thermodesize-16mm_task-testing_trajectory
+sub = [1,2,3,4,5,6,7];%,96,97,99];
+data_dir = '/Users/h/Documents/projects_local/thermode_test/data';
+taskname = {'thermodesize-16mm'};%, 'thermodesize-30mm'};
 for i = 1:length(sub)
-for task = 1:2
-behavioral_dir = fullfile('/Users/h/Documents/projects_local/social_influence_analysis/boulder/rawbeh/', ['sub-', sprintf('%04d', sub(i))], '/beh/');
-filename = fullfile(behavioral_dir, ['sub-',sprintf('%04d', sub(i)),'_task-', taskname{task}, '_beh_trajectory.mat']);
+for task = 1:length(taskname)
+behavioral_dir = fullfile(data_dir, ['sub-', sprintf('%04d', sub(i))],taskname{task}, 'beh');
+filename = fullfile(behavioral_dir, ['sub-',sprintf('%04d', sub(i)),'_', taskname{task}, '_task-testing_trajectory.mat']);
 load(filename);
-new_trajectory = zeros(size(rating_Trajectory,1),4);
+new_trajectory = zeros(size(rating_trajectory,1),2);
 % insert it into a csv file per participant?
-for trl = 1:size(rating_Trajectory,1)
-new_trajectory(trl,1:2) =  rating_Trajectory{trl,1}(end,:); % expect
-new_trajectory(trl,3:4) =  rating_Trajectory{trl,2}(end,:); % actual
+for trl = 1:size(rating_trajectory,1)
+% new_trajectory(trl,1:2) =  rating_trajectory{trl,1}(end,:); % expect
+new_trajectory(trl,1:2) =  rating_trajectory{trl,2}(end,:); % actual
 end
 T = table(new_trajectory);
 T2 = splitvars(T);
-T2.Properties.VariableNames = {'expect_ptb_coord_x', 'expect_ptb_coord_y' , 'actual_ptb_coord_x',  'actual_ptb_coord_y'};
-saveFileName = fullfile(behavioral_dir,[strcat('sub-', sprintf('%04d', sub(i))), '_task-',taskname{task},'_beh_trajectory_formatted.csv' ]);
+T2.Properties.VariableNames = { 'actual_ptb_coord_x',  'actual_ptb_coord_y'};
+saveFileName = fullfile(behavioral_dir,['sub-',sprintf('%04d', sub(i)), '_',taskname{task},'_task-testing_formattedangle.csv' ]);
 writetable(T2,saveFileName)
-end
 
+end
 end
